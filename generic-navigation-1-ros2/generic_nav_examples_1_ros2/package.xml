@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>generic_nav_examples_1_ros2</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="chuong19111996@gmail.com">chuong</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+  <depend>rclcpp</depend>
+  <depend>generic_nav_msgs_srv_action_1_ros2</depend>
+  <depend>generic_nav_map_1_ros2</depend>
+  <depend>generic_nav_global_planner_1_ros2</depend>
+  <depend>generic_nav_controller_1_ros2</depend>
+  <depend>generic_nav_localization_1_ros2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>gazebo_ros</depend>
+  
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
