@@ -18,7 +18,19 @@ endif()
 # Find the packages
 # https://cmake.org/cmake/help/latest/command/find_package.html
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
+
+add_executable(carrot_ctrl_1_ros2 src/carrot_ctrl_1_ros2.cpp)
+ament_target_dependencies(carrot_ctrl_1_ros2 rclcpp std_msgs geometry_msgs tf2_geometry_msgs)
+
+# add the install(TARGETS…) section so ros2 run can FIND your executable
+install(TARGETS
+  carrot_ctrl_1_ros2
+  DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
