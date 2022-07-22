@@ -12,6 +12,17 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
+  <!-- GENERATING MSG & SRV -->
+  <!-- LINK: https://docs.ros.org/en/foxy/Tutorials/Beginner-Client-Libraries/Custom-ROS2-Interfaces.html-->
+  <!-- Because the interfaces rely on rosidl_default_generators for generating language-specific code, you need to declare a 
+  dependency on it. -->
+  <build_depend>rosidl_default_generators</build_depend>
+
+  <!-- The <exec_depend> tag is used to specify runtime or execution-stage dependencies and the rosidl_interface_packages 
+  is the name of the dependency group to which the package belongs, declared using the <member_of_group> tag.-->
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+  
   <export>
     <build_type>ament_cmake</build_type>
   </export>

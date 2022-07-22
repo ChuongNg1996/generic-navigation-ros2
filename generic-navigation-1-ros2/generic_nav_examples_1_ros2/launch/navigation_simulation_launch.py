@@ -47,13 +47,34 @@ def generate_launch_description():
     # ---- STEP 2 (OPTIONAL): LAUNCH CONFIGURATION VARIABLES ---- #
     # ----------------------------------------------------------- #
 
+    namespace = LaunchConfiguration('namespace')
+    use_sim_time = LaunchConfiguration('use_sim_time') 
+    use_robot_state_pub = LaunchConfiguration('use_robot_state_pub')
+
     use_simulator = LaunchConfiguration('use_simulator') 
     headless = LaunchConfiguration('headless')
     world = LaunchConfiguration('world')
     environment_sdf_path = LaunchConfiguration('environment_sdf_path')
     robot_sdf_path = LaunchConfiguration('robot_sdf_path')
 
-    
+    remappings = [('/tf', 'tf'),
+                  ('/tf_static', 'tf_static')]
+
+    declare_namespace_cmd = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Top-level namespace')
+
+    declare_use_sim_time_cmd = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use simulation (Gazebo) clock if true')
+
+    declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
+        'use_robot_state_pub',
+        default_value='True',
+        description='Whether to start the robot state publisher')
+
     declare_use_simulator_cmd = DeclareLaunchArgument(
         'use_simulator',
         default_value='True',
@@ -105,16 +126,16 @@ def generate_launch_description():
     # ----------------------------------------------------------- #
 
     # Spawn Environment 
-    spawn_environment_cmd = Node(
-    package='gazebo_ros', 
-    executable='spawn_entity.py',
-    arguments=['-entity', 'environment', 
-               '-file', environment_sdf_path,
-                  '-x', '0.0',
-                  '-y', '0.0',
-                  '-z', '0.0',
-                  '-Y', '0.0'],
-                  output='screen')
+    # spawn_environment_cmd = Node(
+    # package='gazebo_ros', 
+    # executable='spawn_entity.py',
+    # arguments=['-entity', 'environment', 
+    #            '-file', environment_sdf_path,
+    #               '-x', '2.0',
+    #               '-y', '0.0',
+    #               '-z', '0.0',
+    #               '-Y', '0.0'],
+    #               output='screen')
     
     # Spawn Robot 
     spawn_robot_cmd = Node(
@@ -128,24 +149,48 @@ def generate_launch_description():
                   '-Y', '0.0'],
                   output='screen')
 
+    ################################################################
+            # COMPONENT 1: ROBOT STATE PUBLISHER (ROS NODE)
+    ################################################################
+
+    urdf = os.path.join(navigation_examples_dir , 'urdf', 'robot_model.urdf') 
+    # Remember to create PATH to `urdf` folder (in nav2_examples) in CMakeLists.txt
+
+    start_robot_state_publisher_cmd = Node(
+        condition=IfCondition(use_robot_state_pub),
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
+        namespace=namespace,
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}],
+        remappings=remappings,
+        arguments=[urdf])
+
+
     # ----------------------------------------------------------- #
     # --------- STEP 5: Create the LAUNCH DESCRIPTION ----------- #
     # ----------------------------------------------------------- #
 
     return LaunchDescription([
+        declare_namespace_cmd,
+        declare_use_sim_time_cmd,
+        declare_use_robot_state_pub_cmd,
+
         declare_use_simulator_cmd,
         declare_simulator_cmd,
         declare_world_cmd,
         declare_environment_sdf_path_cmd,
         declare_robot_sdf_path_cmd,
-        
+
         
         # Run ROS Launch files
         start_gazebo_server_cmd,
         start_gazebo_client_cmd,
 
         # launch ROS NODES
-        spawn_environment_cmd,
+        #spawn_environment_cmd,
         spawn_robot_cmd,
+        start_robot_state_publisher_cmd,
 
     ])

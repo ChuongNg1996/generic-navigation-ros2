@@ -1,0 +1,2 @@
+GenericPoint point
+GenericOrientation orientation

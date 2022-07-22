@@ -6,7 +6,7 @@
     <!-- ___________________________________________________ -->
 
     <model name="robot"> 
-      <pose>-2.0 -0.5 0.01 0.0 0.0 0.0</pose>
+      <pose>0.0 0.0 0.01 0.0 0.0 0.0</pose>
 
       <link name="base_footprint"/>
 
@@ -51,7 +51,7 @@
 
       <!-- IMU LINK -->
       <link name="imu_link">
-        <sensor name="tb3_imu" type="imu">
+        <sensor name="robot_imu" type="imu">
           <always_on>true</always_on>
           <update_rate>200</update_rate>
           <imu>
@@ -98,12 +98,73 @@
           </imu>
           <plugin name="imu" filename="libgazebo_ros_imu_sensor.so">
             <ros>
-              <!-- <namespace>/tb3</namespace> -->
               <remapping>~/out:=imu</remapping>
             </ros>
           </plugin>
         </sensor>
       </link>
+
+
+      <!-- <link name="gps_link">
+        <inertial>
+          <pose>-0.052 0 0.111 0 0 0</pose>
+          <inertia>
+            <ixx>0.001</ixx>
+            <ixy>0.000</ixy>
+            <ixz>0.000</ixz>
+            <iyy>0.001</iyy>
+            <iyz>0.000</iyz>
+            <izz>0.001</izz>
+          </inertia>
+          <mass>1e-5"</mass>
+        </inertial>
+
+        <collision name="gps_collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.01 0.01 0.01</size>
+            </box>
+          </geometry>
+        </collision>
+
+        <visual name="gps_visual">
+         <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.01 0.01 0.01</size>
+            </box>
+          </geometry>
+        </visual>
+
+        <sensor name="robot_gps" type="gps">
+          <always_on>true</always_on>
+          <update_rate>4.0</update_rate>
+          <plugin name="gps" filename="libhector_gazebo_ros_gps.so">
+            <ros>
+
+              <remapping>~/out:=gps</remapping>
+            </ros>
+            <bodyName>gps_link</bodyName>
+            <frameId>gps_link</frameId>
+            <topicName>gps</topicName>
+            <velocityTopicName>/gps/velocity</velocityTopicName>
+            <referenceLatitude>0.0</referenceLatitude>
+            <referenceLongitude>0.0</referenceLongitude>
+            <referenceHeading>0.0</referenceHeading>
+            <referenceAltitude>0.0</referenceAltitude>
+            <offset>0 0 0</offset>
+            <drift>0.001 0.001 0.001</drift>
+            <gaussianNoise>0.05 0.05 0.05</gaussianNoise>
+            <velocityDrift>0.001 0.001 0.001</velocityDrift>
+            <velocityGaussianNoise>0.5 0.5 0.5</velocityGaussianNoise>
+          </plugin>
+        </sensor>
+      </link> -->
+      
+
+
+
 
       <!-- LIDAR LINK -->
       <link name="base_scan">
@@ -433,6 +494,15 @@
           <xyz>0 0 1</xyz>
         </axis>
       </joint>
+
+      <!-- <joint name="gps_joint" type="fixed">
+        <parent>base_link</parent>
+        <child>gps_link</child>
+        <pose>0 0 0 0 0 0</pose>
+        <axis>
+          <xyz>0 0 0</xyz>
+        </axis>
+      </joint> -->
 
       <joint name="camera_joint" type="fixed">
         <parent>base_link</parent>
