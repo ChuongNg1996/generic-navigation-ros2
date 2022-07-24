@@ -23,8 +23,11 @@ using namespace std::chrono_literals;
             typedef double PoseData;
             PoseData pose_curr[6];
             PoseData pose_goal[6];
-            PoseData pose_tolerance[6] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.1};
-            std_msgs::msg::Bool in_process;
+            PoseData pose_tolerance[6] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+            PoseData angle_distance_right, angle_distance_left;
+            double linear_vel = 0.5; // Kind of inversed-proportional to tolerance
+            double angular_vel = 0.2; // Kind of inversed-proportional to tolerance
+            std_msgs::msg::Bool in_process_init;
             geometry_msgs::msg::Twist command_vel;
 
             // ---------------------------------------------------------- //
@@ -44,9 +47,6 @@ using namespace std::chrono_literals;
             {
                 pose_curr[0] = msg->pose.position.x;
                 pose_curr[1] = msg->pose.position.y;
-                //pose_curr[2] = msg->pose.position.z;
-                //pose_curr[3] = msg->pose.orientation.x;
-                //pose_curr[4] = msg->pose.orientation.y;
                 pose_curr[5] = msg->pose.orientation.z;
             }
 
@@ -54,58 +54,67 @@ using namespace std::chrono_literals;
             {
                 pose_goal[0] = msg->pose.position.x;
                 pose_goal[1] = msg->pose.position.y;
-                // pose_goal[2] = msg->pose.position.z;
-                // pose_goal[3] = msg->pose.orientation.x;
-                // pose_goal[4] = msg->pose.orientation.y;
                 // pose_goal[5] = msg->pose.orientation.z;
 
-                in_process.data = true;
-                ctrl_process_pub_->publish(in_process);
+                in_process_init.data = true;
+                ctrl_process_pub_->publish(in_process_init);
             }
 
             void ctrl_callback()
             {
-                if (in_process.data)
+                
+                if (in_process_init.data)
                 {
-                    std::cout << "a" << std::endl;
-
+                    // ---------------------------------------------------------- //
+                    // ---------                Algorithm               --------- //
+                    // ---------------------------------------------------------- //
                     if ( 
                         (abs(pose_goal[0] - pose_curr[0]) > pose_tolerance[0]) ||
                         (abs(pose_goal[1] - pose_curr[1]) > pose_tolerance[1]) 
                     )
-
                     {
-                        std::cout << "c" << std::endl;
                         pose_goal[5] = atan2(pose_goal[1] - pose_curr[1], pose_goal[0] - pose_curr[0]);
                         if (pose_goal[5] < 0) pose_goal[5] = 2*PI + pose_goal[5];
                         if (pose_curr[5] < 0) pose_curr[5] = 2*PI + pose_curr[5];
-                        std::cout << "pose goal: "<< pose_goal[5] <<" pose curr: " << pose_curr[5] << std::endl;
+                        //std::cout << "pose goal[5]: "<< pose_goal[5] <<" pose curr[5]: " << pose_curr[5] << std::endl;
                         if (abs(pose_goal[5] - pose_curr[5]) > pose_tolerance[5])
                         {
-                            if ((pose_goal[5] - pose_curr[5]) > 0) command_vel.angular.z = 0.2;
-                            else command_vel.angular.z = -0.2;
+                            if (pose_goal[5] > pose_curr[5])
+                            {
+                                angle_distance_right = abs((2*PI - pose_goal[5]) + pose_curr[5]); 
+                                angle_distance_left = abs(pose_goal[5] - pose_curr[5]); 
+                            }
+                            else    // There is NO EQUAL case since that would skip this algorithm
+                            {
+                                angle_distance_right = abs(pose_curr[5] - pose_goal[5]);
+                                angle_distance_left = abs((2*PI - pose_curr[5]) + pose_goal[5]);                                 
+                            }
+                            if (angle_distance_right < angle_distance_left) command_vel.angular.z = -angular_vel;
+                            else command_vel.angular.z = angular_vel;
                             command_vel.linear.x = 0;
                         }
                         else
                         {
-                            command_vel.linear.x = 0.2;
+                            command_vel.linear.x = linear_vel;
                             command_vel.angular.z = 0.0;
                         }
                         cmd_vel_pub_->publish(command_vel);
                     }
                     else
                     {
-                        std::cout << "b" << std::endl;
                         command_vel.linear.x = 0.0;
                         command_vel.angular.z = 0.0;
                         cmd_vel_pub_->publish(command_vel);
-                        in_process.data = false;
-                        ctrl_process_pub_->publish(in_process);
+                        in_process_init.data = false;
+                        ctrl_process_pub_->publish(in_process_init);
+                        std::cout << "Sub Goal Reached" << std::endl;
                     }
-
-                }
             }
-
+            else
+            {
+                ctrl_process_pub_->publish(in_process_init);
+            }
+        }
             
         public:
 
@@ -113,19 +122,19 @@ using namespace std::chrono_literals;
             // ---------             CONSTRUCTOR                --------- //
             // ---------------------------------------------------------- //
 
-            carrot_ctrl_node() :  Node ("carrot_ctrl_node"), in_process()
+            carrot_ctrl_node() :  Node ("carrot_ctrl_node"), in_process_init()
             {
                 // Pub & Sub
                 pose_curr_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("pose_pub", 10, std::bind(&carrot_ctrl_node::pose_curr_sub_callback, this, std::placeholders::_1));
                 pose_goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>("pose_sub_goal", 10, std::bind(&carrot_ctrl_node::pose_goal_sub_callback, this, std::placeholders::_1));
-                ctrl_process_pub_ = this->create_publisher<std_msgs::msg::Bool>("ctrl_process", 10);
+                ctrl_process_pub_ = this->create_publisher<std_msgs::msg::Bool>("ctrl_process_init", 10);
                 cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
 
                 /* Algorithm TIMER */
                 ctrl_timer_ = this->create_wall_timer(
                 10ms, std::bind(&carrot_ctrl_node::ctrl_callback, this));
 
-                in_process.data = false;
+                in_process_init.data = false;
             }
 
     };
