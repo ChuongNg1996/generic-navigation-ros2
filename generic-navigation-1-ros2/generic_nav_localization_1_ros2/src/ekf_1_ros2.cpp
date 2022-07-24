@@ -1,17 +1,17 @@
-//#include <memory>                       // Dynamic memory management
-//#include <thread>                       // Threaded Programming
-#include <iostream>                     // IO operations
-#include <cmath>                        // Generic math operations
-#include <chrono>                       // For time
-#include <eigen3/Eigen/Dense>           // For matrix operation
+//#include <memory>                                     // Dynamic memory management
+//#include <thread>                                     // Threaded Programming
+#include <iostream>                                     // IO operations
+#include <cmath>                                        // Generic math operations
+#include <chrono>                                       // For time utilities
+#include <eigen3/Eigen/Dense>                           // For matrix operation
 
-#include "rclcpp/rclcpp.hpp"            // C++ wrapper of ros2 node class
-#include "sensor_msgs/msg/imu.hpp"      // Get this from cmd: ros2 topic info /imu
-#include "nav_msgs/msg/odometry.hpp"    // Get this from cmd: ros2 topic info /odom
+#include "rclcpp/rclcpp.hpp"                            // C++ wrapper of ros2 node class
+#include "sensor_msgs/msg/imu.hpp"                      // Get this from cmd: ros2 topic info /imu
+#include "nav_msgs/msg/odometry.hpp"                    // Get this from cmd: ros2 topic info /odom
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 
-using namespace std::chrono_literals;
+using namespace std::chrono_literals;                   // For time utilities
 
 
     class ekf_node : public rclcpp::Node
@@ -228,6 +228,8 @@ using namespace std::chrono_literals;
                 // Pub & Sub
                 imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>("imu", 10, std::bind(&ekf_node::imu_callback, this, std::placeholders::_1));
                 odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>("odom", 10, std::bind(&ekf_node::odom_callback, this, std::placeholders::_1));
+
+                // Publish current pose of the robot
                 pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("pose_pub", 10);
 
 

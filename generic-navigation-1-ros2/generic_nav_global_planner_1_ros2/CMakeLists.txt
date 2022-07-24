@@ -26,9 +26,13 @@ find_package(tf2_geometry_msgs REQUIRED)
 add_executable(grid_dijkstra_8dir_1 src/grid_dijkstra_8dir_1.cpp)
 ament_target_dependencies(grid_dijkstra_8dir_1 rclcpp std_msgs geometry_msgs tf2_geometry_msgs)
 
+add_executable(custom_trajectory src/custom_trajectory.cpp)
+ament_target_dependencies(custom_trajectory rclcpp std_msgs geometry_msgs tf2_geometry_msgs)
+
 # add the install(TARGETS…) section so ros2 run can FIND your executable
 install(TARGETS
   grid_dijkstra_8dir_1
+  custom_trajectory
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
