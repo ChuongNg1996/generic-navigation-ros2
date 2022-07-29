@@ -19,8 +19,23 @@
 * **Localization** (`generic_nav_localization_1_ros2`) -> **Global PLanner** &&  **Local PLanner/Path Tracking Controller**
 * **Local PLanner/Path Tracking Controller** -> **Robot Base**.
 
-#### 2.2 Global Planner
+### 2.2 Global Planner
 * Can either take a predfined trajectory (`custom_trajectory.cpp`) or generate a trajectory based on user's goal and given map. 
+
+### 2.3 Local PLanner/Path Tracking Controller
+#### 2.3.1 Carrot Planner
+    ```sh
+                            Carrot Algorithm:
+                            + Constantly check and correct heading (to the sub goal) first 
+                                -> Normalize heading from 0 to 2*PI (heading direction is counterclockwise)
+                                -> If the heading is not reached, check whether required heading is larger or smaller than current heading.
+                                    -> If required heading is LARGER, then ROTATING RIGHT is the sum of (1)[magnitude of current heading] and 
+                                    (2)[offset from 2*PI to required heading]; ROTATING LEFT is the offset from required heading to current
+                                    heading.
+                                    -> If required heading is SMALLER, vice versa.
+                                        -> If ROTATING RIGHT is shorter, then rotate right and vice versa.   
+                            + Once heading is near enough, move forward till near enough.
+    ```
 
 
 ## 3. Examples
