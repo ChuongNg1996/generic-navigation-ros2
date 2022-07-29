@@ -41,13 +41,18 @@
  
 ## 3. Examples
 
+### 3.1 Running a Custom Trajectory
     ```sh
     # Run Simulation Environment
     ros2 launch generic_nav_examples_1_ros2 navigation_simulation_launch.py
     # Run Localization
-    
+    ros2 run generic_nav_localization_1_ros2 ekf_1_ros2 
+    # Run Local Planner
+    ros2 run generic_nav_controller_1_ros2 carrot_ctrl_1_ros2
+    # Run Custom Trajectory (in Global PLanner)
+    ros2 run generic_nav_global_planner_1_ros2 custom_trajectory 
+    # Observe the robot runs in trajectory
     ```
-    
 
 ## 4. Additions
 
