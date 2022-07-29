@@ -24,20 +24,21 @@
 
 ### 2.3 Local PLanner/Path Tracking Controller
 #### 2.3.1 Carrot Planner
+* Algorithms
     ```sh
-                            Carrot Algorithm:
-                            + Constantly check and correct heading (to the sub goal) first 
-                                -> Normalize heading from 0 to 2*PI (heading direction is counterclockwise)
-                                -> If the heading is not reached, check whether required heading is larger or smaller than current heading.
-                                    -> If required heading is LARGER, then ROTATING RIGHT is the sum of (1)[magnitude of current heading] and 
-                                    (2)[offset from 2*PI to required heading]; ROTATING LEFT is the offset from required heading to current
-                                    heading.
-                                    -> If required heading is SMALLER, vice versa.
-                                        -> If ROTATING RIGHT is shorter, then rotate right and vice versa.   
-                            + Once heading is near enough, move forward till near enough.
+    + Constantly check and correct heading (to the sub goal) first 
+        -> Normalize heading from 0 to 2*PI (heading direction is counterclockwise)
+        -> If the heading is not reached, check whether required heading is larger or smaller than current heading.
+            -> If required heading is LARGER, then ROTATING RIGHT is the sum of (1)[magnitude of current heading] and 
+            (2)[offset from 2*PI to required heading]; ROTATING LEFT is the offset from required heading to current
+            heading.
+            -> If required heading is SMALLER, vice versa.
+                -> If ROTATING RIGHT is shorter, then rotate right and vice versa. 
+    + Once heading is near enough, move forward till near enough.
+        -> Since heading is constantly checked, moving forward will be stopped to prioritize for heading correction
+        if the heading deviation exceed the tolerance.
     ```
-
-
+ 
 ## 3. Examples
 
     ```sh
