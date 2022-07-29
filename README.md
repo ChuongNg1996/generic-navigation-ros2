@@ -9,11 +9,29 @@
     colcon build
     ```
 
-## 2. Structure
+## 2. Construction
 
-### 2.1 VERSION 1:
+### 2.1 Pipeline 
+#### 2.1.1 VERSION 1: generic-navigation-1-ros2
+* User -> **Global PLanner** (`generic_nav_global_planner_1_ros2`).
+* **Global PLanner** (`generic_nav_global_planner_1_ros2`) -> **Local PLanner/Path Tracking Controller** (`generic_nav_controller_1_ros2`).
+* **Static Map** (`generic_nav_map_1_ros2`) -> **Global PLanner**
+* **Localization** (`generic_nav_localization_1_ros2`) -> **Global PLanner** &&  **Local PLanner/Path Tracking Controller**
+* **Local PLanner/Path Tracking Controller** -> **Robot Base**.
+
+#### 2.2 Global Planner
+* Can either take a predfined trajectory (`custom_trajectory.cpp`) or generate a trajectory based on user's goal and given map. 
+
 
 ## 3. Examples
+
+    ```sh
+    # Run Simulation Environment
+    ros2 launch generic_nav_examples_1_ros2 navigation_simulation_launch.py
+    # Run Localization
+    
+    ```
+    
 
 ## 4. Additions
 
