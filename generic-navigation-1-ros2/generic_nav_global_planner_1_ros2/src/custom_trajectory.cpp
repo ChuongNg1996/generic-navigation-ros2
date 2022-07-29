@@ -83,36 +83,79 @@ using namespace std::chrono_literals;                   // For time utilities
 
                 //---------------------- READ FILES ----------------------// 
                 
+                // READ A SINGLE FILE
                 // Read the file (Must be full path)
-                indata.open("/home/chuong/ros2_ws/src/generic-navigation-ros2/generic-navigation-1-ros2/generic_nav_global_planner_1_ros2/custom_trajectories/trajectory_1.txt");
+                // indata.open("/home/chuong/ros2_ws/src/generic-navigation-ros2/generic-navigation-1-ros2/generic_nav_global_planner_1_ros2/custom_trajectories/traj_cir");
+
+                // // Check if there is any data/file has been correctly read
+                // if(!indata) { // file couldn't be opened
+                //     std::cout  << "Error: file could not be opened" << std::endl;
+                //     exit(1);
+                // }
+
+                // // This part depends on how data is arranged
+                // std::string s;                              // data in string format
+                // std::stringstream ss1;                      // data in string stream format
+                // ss1 << indata.rdbuf();                      // read the full data and put in string stream
+
+                // // separate data in '\n'
+                // while (getline(ss1, s, '\n')) {
+                //     std::stringstream ss2(s);
+                //     int j = 0;
+                //     // separate data in ','
+                //     while (getline(ss2, s, ' '))
+                //     {
+                //         // Read individual value in string and convert to double 
+                //         if (j == 0) sub_goal.pose.position.x = std::stod(s);    
+                //         else sub_goal.pose.position.y = std::stod(s);
+                //         j++;
+                //         std::cout << s << std::endl;
+                //     }
+                //     max++;                                  // Increase number of data point
+                //     sub_goals.push_back(sub_goal);          // Store data in vector
+                // }
+                // indata.close();
+
+                // READ MULTIPLE FILES
+
+                // x position
+                std::ifstream x_indata;                       
+                std::ifstream y_indata;                       
+                x_indata.open("/home/chuong/ros2_ws/src/generic-navigation-ros2/generic-navigation-1-ros2/generic_nav_global_planner_1_ros2/custom_trajectories/x_cir");
+                y_indata.open("/home/chuong/ros2_ws/src/generic-navigation-ros2/generic-navigation-1-ros2/generic_nav_global_planner_1_ros2/custom_trajectories/y_cir");
 
                 // Check if there is any data/file has been correctly read
-                if(!indata) { // file couldn't be opened
-                    std::cout  << "Error: file could not be opened" << std::endl;
+                if(!x_indata) { // file couldn't be opened
+                    std::cout  << "Error: (x) file could not be opened" << std::endl;
+                    exit(1);
+                }
+
+                if(!y_indata) { // file couldn't be opened
+                    std::cout  << "Error: (x) file could not be opened" << std::endl;
                     exit(1);
                 }
 
                 // This part depends on how data is arranged
-                std::string s;                              // data in string format
-                std::stringstream ss1;                      // data in string stream format
-                ss1 << indata.rdbuf();                      // read the full data and put in string stream
+                std::string s_x;                              // data in string format
+                std::string s_y;                              // data in string format
+                std::stringstream ss_x;                      // data in string stream format
+                std::stringstream ss_y;                      // data in string stream format
+                ss_x << x_indata.rdbuf();                      // read the full data and put in string stream
+                ss_y << y_indata.rdbuf();                      // read the full data and put in string stream
 
                 // separate data in '\n'
-                while (getline(ss1, s, '\n')) {
-                    std::stringstream ss2(s);
-                    int j = 0;
-                    // separate data in ','
-                    while (getline(ss2, s, ','))
-                    {
-                        // Read individual value in string and convert to double
-                        if (j == 0) sub_goal.pose.position.x = std::stod(s);    
-                        else sub_goal.pose.position.y = std::stod(s);
-                        j++;
-                        //std::cout << s << std::endl;
-                    }
+                while (getline(ss_x, s_x, '\n') && getline(ss_y, s_y, '\n') )  
+                {
+                    sub_goal.pose.position.x = std::stod(s_x);  
+                    sub_goal.pose.position.y = std::stod(s_y);    
+                    std::cout << sub_goal.pose.position.x << " " << sub_goal.pose.position.y << std::endl;
                     max++;                                  // Increase number of data point
                     sub_goals.push_back(sub_goal);          // Store data in vector
                 }
+
+                x_indata.close();
+                y_indata.close();
+
                 //--------------------------------------------------------// 
 
                 /* Algorithm TIMER */
