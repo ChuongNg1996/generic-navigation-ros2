@@ -57,6 +57,7 @@
 ## 3. Examples
 
 ### 3.1 Running a Custom Trajectory
+
     ```sh
     # Run Simulation Environment
     ros2 launch generic_nav_examples_1_ros2 navigation_simulation_launch.py
