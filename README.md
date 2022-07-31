@@ -27,6 +27,7 @@
 * Algorithms:
 
  ```sh
+    # Carrot Planner 1: carrot_ctrl_1_ros2.cpp
     + Constantly check and correct heading (to the sub goal) first 
         -> Normalize heading from 0 to 2*PI (heading direction is counterclockwise)
         -> If the heading is not reached, check whether required heading is larger or smaller than current heading.
@@ -39,6 +40,19 @@
         -> Since heading is constantly checked, moving forward will be stopped to prioritize for heading correction
         if the heading deviation exceed the tolerance.
  ```
+ 
+ ```sh
+    # Carrot Planner 2: carrot_ctrl_2_ros2.cpp
+    + Constantly check and correct heading (to the sub goal) first 
+        -> Normalize heading from 0 to 2*PI (heading direction is counterclockwise)
+        -> If the heading is not reached, then rotate current heading in counterclockwise such that goal is origin.
+        -> If rotated current heading is <= 180 -> It's faster to reach origin (which is goal) by rotating clockwise.
+            -> Else, It's faster to reach origin (which is goal) by rotating counterclockwise.
+    + Once heading is near enough, move forward till near enough.
+        -> Since heading is constantly checked, moving forward will be stopped to prioritize for heading correction
+        if the heading deviation exceed the tolerance.
+ ```
+ 
  
 ## 3. Examples
 
