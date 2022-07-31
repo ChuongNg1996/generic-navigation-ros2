@@ -22,6 +22,7 @@ using namespace std::chrono_literals;                   // For time utilities
             typedef double PoseData;                    // General data type for robot pose
             PoseData pose_curr[6];                      // Current pose read from LOCALIZATION node
             PoseData pose_goal[6];                      // Goal pose received from GLOBAL PATH PLANNER node
+
             std_msgs::msg::Bool in_process_init;        // Inform GLOBAL PATH PLANNER whether controller is running or not
                                                         // So that it sends new goal
             geometry_msgs::msg::Twist command_vel;      // Command body velocity to robot frame
@@ -91,14 +92,10 @@ using namespace std::chrono_literals;                   // For time utilities
                         Carrot Algorithm:
                             + Constantly check and correct heading (to the sub goal) first 
                                 -> Normalize heading from 0 to 2*PI (heading direction is counterclockwise)
-                                -> If the heading is not reached, check whether required heading is larger or smaller than current heading.
-                                    -> If required heading is LARGER, then ROTATING RIGHT is the sum of (1)[magnitude of current heading] and 
-                                    (2)[offset from 2*PI to required heading]; ROTATING LEFT is the offset from required heading to current
-                                    heading.
-                                    -> If required heading is SMALLER, vice versa.
-                                        -> If ROTATING RIGHT is shorter, then rotate right and vice versa.   
-                                (There are A LOT OF WAYS to implement the above logic)
-
+                                -> If the heading is not reached, then rotate current heading in counterclockwise such that goal is origin.
+                                -> If rotated current heading is <= 180 -> It's faster to reach origin (which is goal) by rotating clockwise.
+                                    -> Else, It's faster to reach origin (which is goal) by rotating counterclockwise.
+                                
                             + Once heading is near enough, move forward till near enough.
                                 -> Since heading is constantly checked, moving forward will be stopped to prioritize for heading correction
                                 if the heading deviation exceed the tolerance.
@@ -114,22 +111,12 @@ using namespace std::chrono_literals;                   // For time utilities
                         // Constantly check and correct heading (to the sub goal) first 
                         if (abs(pose_goal[5] - pose_curr[5]) > pose_tolerance[5])
                         {
-                            // Check whether required heading is larger or smaller than current heading.
-                            if (pose_goal[5] > pose_curr[5])
-                            {
-                                // If required heading is LARGER, then ROTATING RIGHT is the sum of (1)[magnitude of current heading] and 
-                                // (2)[offset from 2*PI to required heading]; ROTATING LEFT is the offset from required heading to current
-                                // heading.
-                                angle_distance_right = abs((2*PI - pose_goal[5]) + pose_curr[5]); 
-                                angle_distance_left = abs(pose_goal[5] - pose_curr[5]); 
-                            }
-                            else    // There is NO EQUAL case since that would skip this algorithm
-                            {
-                                angle_distance_right = abs(pose_curr[5] - pose_goal[5]);
-                                angle_distance_left = abs((2*PI - pose_curr[5]) + pose_goal[5]);                                 
-                            }
-                            // If ROTATING RIGHT is shorter, then rotate right and vice versa.   
-                            if (angle_distance_right < angle_distance_left) command_vel.angular.z = -angular_vel;
+                            // Adjust current heading with goal heading as origin
+                            pose_curr[5] = pose_curr[5] + (2*PI - pose_goal[5]);    // Rotate current heading in counterclockwise such that goal is origin
+                            if (pose_curr[5] >= 2*PI) pose_curr[5] = pose_curr[5] - 2*PI;
+
+                            // If rotating to right (to reach origin, which is goal heading) is shorter, then rotate right and vice versa.   
+                            if (pose_curr[5] <= PI) command_vel.angular.z = -angular_vel;
                             else command_vel.angular.z = angular_vel;
                             command_vel.linear.x = 0;
                         }

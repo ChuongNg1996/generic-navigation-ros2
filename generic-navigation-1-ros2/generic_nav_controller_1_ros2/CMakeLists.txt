@@ -27,9 +27,17 @@ find_package(tf2_geometry_msgs REQUIRED)
 add_executable(carrot_ctrl_1_ros2 src/carrot_ctrl_1_ros2.cpp)
 ament_target_dependencies(carrot_ctrl_1_ros2 rclcpp std_msgs geometry_msgs tf2_geometry_msgs)
 
+add_executable(carrot_ctrl_2_ros2 src/carrot_ctrl_2_ros2.cpp)
+ament_target_dependencies(carrot_ctrl_2_ros2 rclcpp std_msgs geometry_msgs tf2_geometry_msgs)
+
+add_executable(pid_path_ctrl_1_ros2 src/pid_path_ctrl_1_ros2.cpp)
+ament_target_dependencies(pid_path_ctrl_1_ros2 rclcpp std_msgs geometry_msgs tf2_geometry_msgs)
+
 # add the install(TARGETS…) section so ros2 run can FIND your executable
 install(TARGETS
   carrot_ctrl_1_ros2
+  carrot_ctrl_2_ros2
+  pid_path_ctrl_1_ros2
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)

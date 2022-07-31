@@ -32,9 +32,27 @@ using namespace std::chrono_literals;                   // For time utilities
 
             PoseData pose_tolerance[6] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1}; // Pose tolerance
             PoseData angle_distance_right, angle_distance_left; // Arc length from curren heading to goal heading in both directions
-            double linear_vel = 0.5;                    // Kind of inversed-proportional to tolerance
-            double angular_vel = 0.2;                   // Kind of inversed-proportional to tolerance
-            
+
+            typedef double AlgoData;  
+            AlgoData linear_vel = 0.5;                    // Kind of inversed-proportional to tolerance
+            AlgoData angular_vel = 0.2;                   // Kind of inversed-proportional to tolerance
+
+            // Rotational Velocity
+            PoseData err_rotate = 0;
+            PoseData prev_err_rotate = 0;
+
+            AlgoData Kp_rotate = 4;
+            AlgoData Ki_rotate = 0;                         // No opposing factor to position such that steady-state error exist
+            AlgoData Kd_rotate = 1;                         
+
+            // Linear Velocity
+            PoseData err_linear= 0;
+            PoseData prev_err_linear = 0;
+
+            AlgoData Kp_linear= 3;
+            AlgoData Ki_linear = 0;                         // No opposing factor to position such that steady-state error exist
+            AlgoData Kd_linear = 1;      
+
 
             // ---------------------------------------------------------- //
             // ---------            ROS Variables               --------- //
@@ -88,20 +106,31 @@ using namespace std::chrono_literals;                   // For time utilities
                     {
 
                         /*
-                        Carrot Algorithm:
-                            + Constantly check and correct heading (to the sub goal) first 
-                                -> Normalize heading from 0 to 2*PI (heading direction is counterclockwise)
-                                -> If the heading is not reached, check whether required heading is larger or smaller than current heading.
-                                    -> If required heading is LARGER, then ROTATING RIGHT is the sum of (1)[magnitude of current heading] and 
-                                    (2)[offset from 2*PI to required heading]; ROTATING LEFT is the offset from required heading to current
-                                    heading.
-                                    -> If required heading is SMALLER, vice versa.
-                                        -> If ROTATING RIGHT is shorter, then rotate right and vice versa.   
+                        PID Algorithm with decoupled motion (decouple LINEAR and ROTATION)
+                            Re-use Carrot Algorithm:
+                                + Constantly check and correct heading (to the sub goal) first 
+                                    -> Normalize heading from 0 to 2*PI (heading direction is counterclockwise)
+                                    -> If the heading is not reached, check whether required heading is larger or smaller than current heading.
+                                        -> If required heading is LARGER, then ROTATING RIGHT is the sum of (1)[magnitude of current heading] and 
+                                        (2)[offset from 2*PI to required heading]; ROTATING LEFT is the offset from required heading to current
+                                        heading.
+                                        -> If required heading is SMALLER, vice versa.
+                                            -> If ROTATING RIGHT is shorter, then rotate right and vice versa.   
+
+                                (We cannot ONLY use ERROR = GOAL ANGLE - CURRENT ANGLE or even ERROR = abs(GOAL ANGLE - CURRENT ANGLE) because
+                                their values are only viewed in one direction, which is ANTICLOCKWISE in this case, thus by going with this only
+                                it's irrelevant whether the error is positive or not. 
+                                
+                                E.x.: The goal can be right next to current in the case GOAL = 350, CURRENT = 5 but if only ANTICLOCKWISE is 
+                                considered, then ERROR is positive and the robot rotates a full 345 (350 - 5) instead of 15 from 5 to 350    
+
+                                Thus, we need to take care of the OTHER direction as well in order too see if rotating)
+
                                 (There are A LOT OF WAYS to implement the above logic)
 
-                            + Once heading is near enough, move forward till near enough.
-                                -> Since heading is constantly checked, moving forward will be stopped to prioritize for heading correction
-                                if the heading deviation exceed the tolerance.
+                                + Once heading is near enough, move forward till near enough.
+                                    -> Since heading is constantly checked, moving forward will be stopped to prioritize for heading correction
+                                    if the heading deviation exceed the tolerance.
                         */
 
                         // Normalize headings from 0 to 2*PI (heading direction is counterclockwise)
@@ -129,8 +158,16 @@ using namespace std::chrono_literals;                   // For time utilities
                                 angle_distance_left = abs((2*PI - pose_curr[5]) + pose_goal[5]);                                 
                             }
                             // If ROTATING RIGHT is shorter, then rotate right and vice versa.   
-                            if (angle_distance_right < angle_distance_left) command_vel.angular.z = -angular_vel;
-                            else command_vel.angular.z = angular_vel;
+                            if (angle_distance_right < angle_distance_left) 
+                            {
+                                err_rotate = angle_distance_right;
+                                command_vel.angular.z = -(  err_rotate*Kp_rotate  );
+                            }
+                            else 
+                            {
+                                err_rotate = angle_distance_left;
+                                command_vel.angular.z = err_rotate*Kp_rotate;
+                            }
                             command_vel.linear.x = 0;
                         }
                         else
